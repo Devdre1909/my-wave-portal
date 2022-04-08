@@ -1,7 +1,18 @@
+// Helpers
+const sendWaves = async (contract, address, count) => {
+  while (count > 0) {
+    let waveTxn
+    waveTxn = await contract.connect(address).wave()
+    await waveTxn.wait()
+    count--
+  }
+
+}
+
 // Compile
 
 const main = async () => {
-  const [owner, randomPerson1, randomPerson2] = await hre.ethers.getSigners()
+  const [owner, rP1, rP2, rP3] = await hre.ethers.getSigners()
   
   const waveContractFactory = await hre.ethers.getContractFactory("WavePortal");
   const waveContract = await waveContractFactory.deploy();
@@ -16,15 +27,20 @@ const main = async () => {
   let waveTxn = await waveContract.wave()
   await waveTxn.wait()
 
-  waveCount = await waveContract.getWaves();
+  await waveContract.getWaves();
 
-  waveTxn = await waveContract.connect(randomPerson1).wave()
-  await waveTxn.wait()
+  await sendWaves(waveContract, rP3, 5)
+  await sendWaves(waveContract, rP1, 10)
+  await sendWaves(waveContract, rP2, 2)
 
-  waveTxn = await waveContract.connect(randomPerson2).wave()
-  await waveTxn.wait()
+  await waveContract.getWaves();
 
-  waveCount = await waveContract.getWaves();
+  await waveContract.connect(rP3).getAccountWaves()
+  await waveContract.connect(rP2).getAccountWaves()
+
+  await waveContract.getListOfAccountsAndWavesCount()
+
+
 
 }
 
